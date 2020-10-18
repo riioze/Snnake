@@ -3,27 +3,35 @@ from Snake import *
 import tkinter as tk
 import time
 import random
+from math import inf
+import matplotlib.pyplot as plt
 
 root = tk.Tk()
-
+bestscores = {'Gen' : [], 'best' : [],'popsize' : []}
 WIDTH = 500
 HEIGHT = 500
-POPSIZE = 25
+POPSIZE = 50
 
+CAMERAMODE = False
+
+SHOW_EVERY = 10
 
 canvas = tk.Canvas(root,width = WIDTH,height = HEIGHT,bg = 'black')
 canvas.pack()
 
+food = Food()
 
+gennum = 0
 
 snakes = []
 for x in range(POPSIZE):
-	snakes.append(Snake())
+	snakes.append(Snake(food))
 
 isonealive = True
 
 
-while True:
+for feen in range(2000):
+	gennum+=1
 
 	camera = random.choice(snakes)
 
@@ -39,35 +47,49 @@ while True:
 
 				isonealive = True
 
-		snake.show(canvas,WIDTH,HEIGHT)
+				if (not CAMERAMODE or snake == camera) and gennum % SHOW_EVERY == 0:
+					snake.show(canvas,WIDTH,HEIGHT)
+					root.update()
 
 
 
-		root.update()
 
-		# time.sleep(0.1)
+
+
+
 
 	pool = []
-
+	best = None
+	bestscore = -100000
 	for snake in snakes:
-		for x in range(snake.score()):
+		if snake.score() > bestscore:
+			bestscore = snake.score()
+			best = snake
+		for x in range(int(1.4245*snake.score()**0.98475/100)):
 			pool.append(snake.copy())
 
-	new = []
-	for x in range(POPSIZE):
-		choosed = random.choice(pool)
-		choosed.brain.mutate()
-		pool.remove(choosed)
-		new.append(choosed)
+	for snake in pool:
+		snake.brain.mutate()
 
-	snakes = new
+	snakes = pool
 
+	print(f'Generation num {gennum} : best score is {bestscore}, next population size : {len(snakes)}')
+	bestscores['Gen'].append(gennum)
+	bestscores['best'].append(bestscore)
+	bestscores['popsize'].append(len(snakes))
 
 
 	isonealive = True
 
+	food.randomize()
 
 
+plt.plot(bestscores['Gen'],bestscores['best'],label = "best")
+plt.plot(bestscores['Gen'],bestscores['popsize'],label = "popsize")
+
+
+plt.legend(loc = 4)
+plt.show()
 
 
 # root.mainloop()

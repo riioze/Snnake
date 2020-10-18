@@ -11,17 +11,45 @@ DIR_RIGHT = (1,0)
 DIRECTIONS = [DIR_UP,DIR_RIGHT,DIR_DOWN,DIR_LEFT]
 
 class Snake:
-	def __init__(self):
-		self.position = [[random.randint(5,15),random.randint(5,15)]]
+	def __init__(self,food):
+		self.position = [[10,10]]
 		self.direction = DIR_UP
-		self.food = Food()
+		self.food = food
 		self.alive = True
-		self.brain = NeuralNetwork(7,[32,64,32],4)
+		self.brain = NeuralNetwork(413,[24,24],4)
 		self.lifetime = 0
+		self.hunger = 0
 
 	def update(self):
 		self.lifetime += 1
 		inputs = [len(self.position)/200]
+
+		dnorth = self.position[0][1]
+		dsouth = 20-dnorth
+		dest = self.position[0][0]
+		douest = 20-dest
+
+		listd = [dnorth,dsouth,dest,douest]
+
+		inputs.append(dnorth/20)
+		inputs.append(dsouth/20)
+		inputs.append(dest/20)
+		inputs.append(douest/20)
+
+		for x in range(20):
+			for y in range(20):
+				if [x,y] in self.position:
+					inputs.append(1)
+				elif [x,y] == self.food.position:
+					inputs.append(0.5)
+				else:
+					inputs.append(0)
+
+
+		mini = min(listd)
+
+		inputs.append(mini/10)
+		inputs.append(listd.index(mini)/4)
 
 		for p in self.position[0]:
 			inputs.append(p/20)
@@ -46,12 +74,14 @@ class Snake:
 		self.position.insert(0,newpos)
 		
 		if self.position[0][0] == self.food.position[0] and self.position[0][1] == self.food.position[1]:
-			self.food.randomize
-
+			self.food.randomize()
+			self.hunger = 0
 		else:
 			self.position.pop()
 
-
+		self.hunger += 1
+		if self.hunger == 100*len(self.position):
+			self.alive = False
 
 	def show(self,c,w,h):
 		for body in self.position:
@@ -61,10 +91,11 @@ class Snake:
 	def score(self):
 		score = 60*len(self.position)
 		score += 40 - (abs(self.position[0][0]-self.food.position[0])+abs(self.position[0][1]-self.food.position[1]))
-		score += self.lifetime
+		score += max(0,self.lifetime-5*self.hunger) ** 2
+
 		return score
 
 	def copy(self):
-		copy = Snake()
+		copy = Snake(self.food)
 		copy.brain = self.brain.copy()
 		return copy

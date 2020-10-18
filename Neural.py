@@ -62,7 +62,7 @@ class NeuralNetwork:
 		self.ninputs = ninputs
 		self.listnhidden = listnhidden
 		self.noutputs = noutputs
-		self.learning = 0.01
+		self.learning = 0.1
 		self.hidden = [Layer(ninputs,listnhidden[0])]
 		for x in range(len(listnhidden)-1):
 			self.hidden.append(Layer(listnhidden[x],listnhidden[x+1]))
@@ -76,8 +76,14 @@ class NeuralNetwork:
 		return self.outputs
 
 	def copy(self):
+		# if random.uniform(0,10) < self.learning:
+		# 	self.listnhidden[random.randrange(len(self.listnhidden))] += 1
+
+		# if random.uniform(0,100) < self.learning:
+		# 	self.listnhidden.append(random.randint(7,13))
+
 		copy = NeuralNetwork(self.ninputs,self.listnhidden,self.noutputs)
-		for x in range(len(copy.hidden)):
+		for x in range(len(self.hidden)):
 			copy.hidden[x] = self.hidden[x].copy()
 		copy.output = self.output.copy()
 
