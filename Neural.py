@@ -52,7 +52,8 @@ class Layer:
 
 		for wa in self.weights:
 			for wb in wa:
-				wb+= random.uniform(-learning,learning)
+				if random.uniform(0,1) < learning:
+					wb+= random.uniform(-learning,learning)
 
 
 
